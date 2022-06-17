@@ -23,6 +23,8 @@ var requestHandler = function(request, response) {
   // http://nodejs.org/documentation/api/
 
   // Do some basic logging.
+  console.log('request: ', Object.keys(request))
+  console.log('response: ', Object.keys(response))
   //
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
@@ -70,3 +72,8 @@ var defaultCorsHeaders = {
   'access-control-allow-headers': 'content-type, accept, authorization',
   'access-control-max-age': 10 // Seconds.
 };
+
+module.exports = {
+  'defaultCorsHeaders': defaultCorsHeaders,
+  'requestHandler': requestHandler
+}
