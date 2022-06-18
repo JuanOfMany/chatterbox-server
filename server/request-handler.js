@@ -11,8 +11,9 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var messagesData = []
 
-var requestHandler = function(request, response) {
+var handleRequest = function(request, response) {
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -23,51 +24,96 @@ var requestHandler = function(request, response) {
   // http://nodejs.org/documentation/api/
 
   // ======== Dummy Message =========
-  var dummyMessages = [{
-    username:'Name Goes Here',
-    text: 'Text Goes Here',
-    createdAt: 1,
 
-  }]
 
-  // Do some basic logging.
-  console.log('thisisrequest: ', (request))
-  if (request.url === '/classes/messages') {
-    console.log('it\'s the base page')
+  var addMessage = function(message) {
+    message = JSON.parse(message);
+    // console.log('addMessage : ', message, typeof message)
+    // message.createdAt = messagesData.length;
+    messagesData.push(message)
   }
-  // console.log('response: ', (response))
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
-  // The outgoing status.
-  var statusCode = 200;
+  // console.log('thisisrequest: ', (request))
+  if (request.url === '/classes/messages') {
+    console.log('serving a ', request.method, 'request' )
+    if (request.method === 'OPTION') {
+      var statusCode = 202;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'application/json';
+      response.writeHead(statusCode, headers);
+      response.write(headers)
+      response.end()
+    }
 
-  // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
+    if (request.method === 'GET') {
+      console.log('What is response.write?' ,response.write)
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'application/json';
+      response.writeHead(statusCode, headers);
+      response.write(JSON.stringify(messagesData));
+      response.end()
+    }
 
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'application/json';
-
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
-
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  response.write(JSON.stringify(dummyMessages))
-  response.end();
+    if (request.method === 'POST') {
+      var body = '';
+      request.on('data', function (chunk) {
+        body += chunk;
+      });
+      request.on('end', function () {
+        addMessage(body);
+        var statusCode = 201
+        var headers = defaultCorsHeaders;
+        headers['Content-Type'] = 'application/json';
+        response.writeHead(statusCode, headers);
+        response.write(body)
+        response.end()
+      })
+    }
+  } else {
+    var statusCode = 404;
+    var headers = defaultCorsHeaders;
+    response.writeHead(statusCode, headers);
+    response.end('Page not found');
+  }
 };
+
+  // // COMMENT OUT BELOW
+  // // console.log('response: ', (response))
+  // //
+  // // Adding more logging to your server can be an easy way to get passive
+  // // debugging help, but you should always be careful about leaving stray
+  // // console.logs in your code.
+  // console.log('Serving request type ' + request.method + ' for url ' + request.url);
+
+
+  // // The outgoing status.
+  // var statusCode = 200;
+
+  // // See the note below about CORS headers.
+  // var headers = defaultCorsHeaders;
+
+  // // Tell the client we are sending them plain text.
+  // //
+  // // You will need to change this if you are sending something
+  // // other than plain text, like JSON or HTML.
+  // headers['Content-Type'] = 'application/json';
+
+  // // .writeHead() writes to the request line and headers of the response,
+  // // which includes the status and all headers.
+  // response.writeHead(statusCode, headers);
+
+  // // Make sure to always call response.end() - Node may not send
+  // // anything back to the client until you do. The string you pass to
+  // // response.end() will be the body of the response - i.e. what shows
+  // // up in the browser.
+  // //
+  // // Calling .end "flushes" the response's internal buffer, forcing
+  // // node to actually send all the data over to the client.
+  // response.write(JSON.stringify(dummyMessages))
+  // response.end();
+  // };
+  // COMMENT OUT ABOVE
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
@@ -87,5 +133,38 @@ var defaultCorsHeaders = {
 
 module.exports = {
   'defaultCorsHeaders': defaultCorsHeaders,
-  'requestHandler': requestHandler
+  'handleRequest': handleRequest
 }
+
+// var dummyMessages = [
+//   {
+//     username: 'zero',
+//     text: 'this is the message',
+//     createdAt: 0,
+//   },
+//   {
+//     username: 'some dude',
+//     text: 'this is a message',
+//     createdAt: 1,
+//   },
+//   {
+//     username: 'Me llamo Lopez',
+//     text: 'este es un mensaje',
+//     createdAt: 2,
+//   },
+//   {
+//     username: 'Bonjor',
+//     text: 'parlevous frances',
+//     createdAt: 3,
+//   },
+//   {
+//     username: 'asdf',
+//     text: 'suuuuuuh',
+//     createdAt: 4,
+//   },
+//   {
+//     username: 'Jin An Liu',
+//     text: 'ni hao, wo xi huan bi sa bing',
+//     createdAt: 5,
+//   }
+// ]
