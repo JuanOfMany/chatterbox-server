@@ -31,28 +31,27 @@ var handleRequest = function(request, response) {
     // console.log('addMessage : ', message, typeof message)
     // message.createdAt = messagesData.length;
     messagesData.push(message)
+    return message;
   }
 
   // console.log('thisisrequest: ', (request))
   if (request.url === '/classes/messages') {
-    console.log('serving a ', request.method, 'request' )
-    if (request.method === 'OPTION') {
+    console.log('serving a(n)', request.method, 'request' )
+    if (request.method === 'OPTIONS') {
       var statusCode = 202;
       var headers = defaultCorsHeaders;
+      response.setHeader('allow', 'GET, POST, OPTIONS')
       headers['Content-Type'] = 'application/json';
       response.writeHead(statusCode, headers);
-      response.write(headers)
       response.end()
     }
 
     if (request.method === 'GET') {
-      console.log('What is response.write?' ,response.write)
       var statusCode = 200;
       var headers = defaultCorsHeaders;
       headers['Content-Type'] = 'application/json';
       response.writeHead(statusCode, headers);
-      response.write(JSON.stringify(messagesData));
-      response.end()
+      response.end(JSON.stringify(messagesData))
     }
 
     if (request.method === 'POST') {
@@ -61,13 +60,12 @@ var handleRequest = function(request, response) {
         body += chunk;
       });
       request.on('end', function () {
-        addMessage(body);
+        body = addMessage(body);
         var statusCode = 201
         var headers = defaultCorsHeaders;
         headers['Content-Type'] = 'application/json';
         response.writeHead(statusCode, headers);
-        response.write(body)
-        response.end()
+        response.end(JSON.stringify('pls get through'))
       })
     }
   } else {
