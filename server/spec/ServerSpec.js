@@ -15,6 +15,27 @@ describe('Node Server Request Listener Function', function() {
     expect(res._ended).to.equal(true);
   });
 
+
+  it('Should answer PUT requests for /classes/messages with a 400 status code', function() {
+    var req = new stubs.request('/classes/messages', 'PUT');
+    var res = new stubs.response();
+
+    handler.handleRequest(req, res);
+
+    expect(res._responseCode).to.equal(400);
+    expect(res._ended).to.equal(true);
+  });
+
+  it('Should answer DELETE requests for /classes/messages with a 400 status code', function() {
+    var req = new stubs.request('/classes/messages', 'DELETE');
+    var res = new stubs.response();
+
+    handler.handleRequest(req, res);
+
+    expect(res._responseCode).to.equal(400);
+    expect(res._ended).to.equal(true);
+  });
+
   it('Should send back parsable stringified JSON', function() {
     var req = new stubs.request('/classes/messages', 'GET');
     var res = new stubs.response();
@@ -80,6 +101,20 @@ describe('Node Server Request Listener Function', function() {
     expect(messages[0].text).to.equal('Do my bidding!');
     expect(res._ended).to.equal(true);
   });
+
+  it('Should reject empty string text and get 400 status code', function () {
+    var stubMsg = {
+      username: 'Jono',
+      text: ''
+    };
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg)
+    var res = new stubs.response();
+
+    handler.handleRequest(req, res);
+
+    expect(res._responseCode).to.equal(400)
+  });
+
 
   it('Should 404 when asked for a nonexistent file', function() {
     var req = new stubs.request('/arglebargle', 'GET');
